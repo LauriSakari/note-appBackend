@@ -4,6 +4,7 @@ const express = require('express')
 const app = express()
 const Note = require('./models/note')
 
+app.use(express.static('build'))
 app.use(express.json())
 app.use(cors())
 
@@ -32,6 +33,7 @@ let notes = [
   })
   
   app.get('/api/notes', (request, response) => {
+    console.log('haetaan kaikki muistiinpanot')
     Note.find({}).then(notes => {
       response.json(notes)
     })
@@ -39,6 +41,7 @@ let notes = [
 
   // UUSI APP.GET
   app.get('/api/notes/:id', (request, response) => {
+    console.log('haetaan muistiinpanoa: ', request.params.id)
     Note.findById(request.params.id).then(note => {
       response.json(note)
     })
@@ -92,11 +95,11 @@ let notes = [
   app.delete('/api/notes/:id', (request, response) => {
     const id = Number(request.params.id)
     notes = notes.filter(note => note.id !== id)
-  
+
     response.status(204).end()
   })
 
-  const PORT = process.env.PORT || 3001
+  const PORT = process.env.PORT
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
   })
