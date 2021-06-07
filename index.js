@@ -89,6 +89,26 @@ app.use(requestLogger)
       .catch(error => next(error))
   })
 
+  app.post('/api/notes', (request, response, next) => {
+    const body = request.body
+  
+    const note = new Note({
+      content: body.content,
+      important: body.important || false,
+      date: new Date(),
+    })
+  
+    note
+      .save()
+      .then(savedNote => {
+        return savedNote.toJSON()
+    })
+      .then(savedAndFormattedNote => {
+        response.json(savedAndFormattedNote)
+      })
+    .catch(error => next(error))
+  })
+
   const unknownEndpoint = (request, response) => {
     response.status(404).send({ error: 'unknown endpoint' })
   }
@@ -101,6 +121,8 @@ app.use(requestLogger)
   
     if (error.name === 'CastError') {
       return response.status(400).send({ error: 'malformatted id' })
+    } else if (error.name === 'ValidationError')  {
+      return response.status(400).json({ error: error.message})
     }
   
     next(error)
@@ -126,33 +148,6 @@ app.use(requestLogger)
   //     : 0
   //   return maxId + 1
   // }
-  
-  app.post('/api/notes', (request, response) => {
-    const body = request.body
-  
-    if (!body.content) {
-      return response.status(400).json({ 
-        error: 'content missing' 
-      })
-    }
-  
-    const note = new Note({
-      content: body.content,
-      important: body.important || false,
-      date: new Date(),
-      // VANHAA KOODIA ENNEN MONGODB KÄYTTÖÖNOTTOA
-      // id: generateId(),
-    })
-    console.log(note)
-  
-    note.save().then(savedNote => {
-      response.json(savedNote)
-    })
-    // VANHAA KOODIA ENNEN MONGODB KÄYTTÖÖNOTTOA
-    // notes = notes.concat(note)
-  
-    // response.json(note)
-  })
 
   const PORT = process.env.PORT
   app.listen(PORT, () => {
